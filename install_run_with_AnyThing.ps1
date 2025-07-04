@@ -1,4 +1,5 @@
 Param(
+    [string]$Action,
     [string]$Choice,
     [string]$Location
 )
@@ -9,24 +10,67 @@ If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     Exit
 }
 
-if ([string]::IsNullOrWhiteSpace($Choice)) {
+function Show-Menu {
+    param (
+        [string]$Title,
+        [System.Collections.ArrayList]$Options
+    )
+
+    Clear-Host
+    Write-Host "--- $Title ---" -ForegroundColor Cyan
+    for ($i = 0; $i -lt $Options.Count; $i++) {
+        Write-Host "$($i + 1). $($Options[$i])"
+    }
+    Write-Host "------------------"
+
+    $selection = Read-Host "Enter your choice (number)"
+    return $selection
+}
+
+# --- Get Action --- #
+if ([string]::IsNullOrWhiteSpace($Action)) {
+    $actionOptions = [System.Collections.ArrayList]@("Install", "Uninstall")
+    $actionSelection = Show-Menu -Title "Choose Action" -Options $actionOptions
+    
     while ($true) {
-        $Choice = Read-Host "Enter 'RovoDev' to manage 'Run with RovoDev' or 'Gemini' to manage 'Run with Gemini'"
-        if ($Choice -eq 'RovoDev' -or $Choice -eq 'Gemini') {
+        if ($actionSelection -ge 1 -and $actionSelection -le $actionOptions.Count) {
+            $Action = $actionOptions[$actionSelection - 1]
             break
         } else {
-            Write-Warning "Invalid choice. Please enter 'RovoDev' or 'Gemini'."
+            Write-Warning "Invalid choice. Please enter a number from the menu."
+            $actionSelection = Read-Host "Enter your choice (number)"
         }
     }
 }
 
-if ([string]::IsNullOrWhiteSpace($Location)) {
+# --- Get Choice (RovoDev/Gemini) --- #
+if ([string]::IsNullOrWhiteSpace($Choice)) {
+    $choiceOptions = [System.Collections.ArrayList]@("RovoDev", "Gemini")
+    $choiceSelection = Show-Menu -Title "Choose Command" -Options $choiceOptions
+    
     while ($true) {
-        $Location = Read-Host "Enter 'Folder' to add to folder context menu or 'Background' to add to folder background context menu"
-        if ($Location -eq 'Folder' -or $Location -eq 'Background') {
+        if ($choiceSelection -ge 1 -and $choiceSelection -le $choiceOptions.Count) {
+            $Choice = $choiceOptions[$choiceSelection - 1]
             break
         } else {
-            Write-Warning "Invalid choice. Please enter 'Folder' or 'Background'."
+            Write-Warning "Invalid choice. Please enter a number from the menu."
+            $choiceSelection = Read-Host "Enter your choice (number)"
+        }
+    }
+}
+
+# --- Get Location (Folder/Background) --- #
+if ([string]::IsNullOrWhiteSpace($Location)) {
+    $locationOptions = [System.Collections.ArrayList]@("Folder", "Background")
+    $locationSelection = Show-Menu -Title "Choose Context Menu Location" -Options $locationOptions
+
+    while ($true) {
+        if ($locationSelection -ge 1 -and $locationSelection -le $locationOptions.Count) {
+            $Location = $locationOptions[$locationSelection - 1]
+            break
+        } else {
+            Write-Warning "Invalid choice. Please enter a number from the menu."
+            $locationSelection = Read-Host "Enter your choice (number)"
         }
     }
 }
@@ -50,16 +94,26 @@ switch ($Choice) {
     "RovoDev" {
         $regPathSuffix = "Run with RovoDev"
         $menuName = "Run with RovoDev"
-        $acliPath = Join-Path $PSScriptRoot "acli.exe"
-        if (-not (Test-Path $acliPath)) {
-            $acliPath = Read-Host "Enter the full path to acli.exe (e.g., C:\Program Files\RovoDev\acli.exe)"
+        if ($Action -eq "Install") {
+            $acliPath = Join-Path $PSScriptRoot "acli.exe"
+            if (-not (Test-Path $acliPath)) {
+                $acliPath = Read-Host "Enter the full path to acli.exe (e.g., C:\Program Files\RovoDev\acli.exe)"
+            }
         }
-        $commandToExecute = "$executor -NoExit -Command `"Set-Location -LiteralPath '%1'; & '$acliPath' rovodev run`""
+        if ($Location -eq 'Background') {
+            $commandToExecute = "$executor -NoExit -Command `"Set-Location -LiteralPath '%V'; & '$acliPath' rovodev run`""
+        } else {
+            $commandToExecute = "$executor -NoExit -Command `"Set-Location -LiteralPath '%1'; & '$acliPath' rovodev run`""
+        }
     }
     "Gemini" {
         $regPathSuffix = "Run with Gemini"
         $menuName = "Run with Gemini"
-        $commandToExecute = "$executor -NoExit -Command `"Set-Location -LiteralPath '%1'; gemini`""
+        if ($Location -eq 'Background') {
+            $commandToExecute = "$executor -NoExit -Command `"Set-Location -LiteralPath '%V'; gemini`""
+        } else {
+            $commandToExecute = "$executor -NoExit -Command `"Set-Location -LiteralPath '%1'; gemini`""
+        }
     }
     default {
         Write-Error "Invalid choice. Exiting."
@@ -69,20 +123,28 @@ switch ($Choice) {
 
 $regPath = "${regPathRoot}\$regPathSuffix"
 
-if (Test-Path $regPath) {
-    Write-Host "Menu entry '$menuName' found. Removing..." -ForegroundColor Yellow
-    Remove-Item -Path $regPath -Recurse
-    Write-Host "Removed '$menuName'." -ForegroundColor Green
-} else {
-    Write-Host "Menu entry '$menuName' not found. Adding..." -ForegroundColor Cyan
+if ($Action -eq "Uninstall") {
+    if (Test-Path $regPath) {
+        Write-Host "Menu entry '$menuName' found. Removing..." -ForegroundColor Yellow
+        Remove-Item -Path $regPath -Recurse
+        Write-Host "Removed '$menuName'." -ForegroundColor Green
+    } else {
+        Write-Host "Menu entry '$menuName' not found. Nothing to remove." -ForegroundColor Green
+    }
+} else { # Action is Install
+    if (Test-Path $regPath) {
+        Write-Host "Menu entry '$menuName' already exists. Skipping installation." -ForegroundColor Yellow
+    } else {
+        Write-Host "Menu entry '$menuName' not found. Adding..." -ForegroundColor Cyan
 
-    New-Item -Path $regPath -Force | Out-Null
-    Set-ItemProperty -Path $regPath -Name "(Default)" -Value $menuName
-    Set-ItemProperty -Path $regPath -Name "Icon" -Value $executor
+        New-Item -Path $regPath -Force | Out-Null
+        Set-ItemProperty -Path $regPath -Name "(Default)" -Value $menuName
+        Set-ItemProperty -Path $regPath -Name "Icon" -Value $executor
 
-    $commandPath = Join-Path $regPath "command"
-    New-Item -Path $commandPath -Force | Out-Null
-    Set-ItemProperty -Path $commandPath -Name "(Default)" -Value $commandToExecute
+        $commandPath = Join-Path $regPath "command"
+        New-Item -Path $commandPath -Force | Out-Null
+        Set-ItemProperty -Path $commandPath -Name "(Default)" -Value $commandToExecute
 
-    Write-Host "Added '$menuName'. Using PowerShell: $executor" -ForegroundColor Green
+        Write-Host "Added '$menuName'. Using PowerShell: $executor" -ForegroundColor Green
+    }
 }
