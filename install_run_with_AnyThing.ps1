@@ -1,5 +1,6 @@
 Param(
-    [string]$Choice
+    [string]$Choice,
+    [string]$Location
 )
 
 If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
@@ -19,7 +20,25 @@ if ([string]::IsNullOrWhiteSpace($Choice)) {
     }
 }
 
-$regPathRoot = "Registry::HKEY_CLASSES_ROOT\Directory\shell"
+if ([string]::IsNullOrWhiteSpace($Location)) {
+    while ($true) {
+        $Location = Read-Host "Enter 'Folder' to add to folder context menu or 'Background' to add to folder background context menu"
+        if ($Location -eq 'Folder' -or $Location -eq 'Background') {
+            break
+        } else {
+            Write-Warning "Invalid choice. Please enter 'Folder' or 'Background'."
+        }
+    }
+}
+
+$regPathRoot = "Registry::HKEY_CLASSES_ROOT\Directory"
+
+if ($Location -eq 'Background') {
+    $regPathRoot = "${regPathRoot}\Background\shell"
+} else {
+    $regPathRoot = "${regPathRoot}\shell"
+}
+
 $pwshPath = (Get-Command "pwsh.exe" -ErrorAction SilentlyContinue)?.Source
 $executor = if ($pwshPath) { "pwsh.exe" } else { "powershell.exe" }
 
