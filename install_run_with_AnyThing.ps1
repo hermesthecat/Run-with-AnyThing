@@ -1,12 +1,12 @@
+Param(
+    [string]$Choice
+)
+
 If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
     Write-Warning "This script must be run with administrator privileges. Please run the script as an administrator."
     Start-Sleep -Seconds 5
     Exit
 }
-
-Param(
-    [string]$Choice
-)
 
 if ([string]::IsNullOrWhiteSpace($Choice)) {
     while ($true) {
@@ -19,7 +19,7 @@ if ([string]::IsNullOrWhiteSpace($Choice)) {
     }
 }
 
-$regPathRoot = "HKCR:\Directory\shell"
+$regPathRoot = "Registry::HKEY_CLASSES_ROOT\Directory\shell"
 $pwshPath = (Get-Command "pwsh.exe" -ErrorAction SilentlyContinue)?.Source
 $executor = if ($pwshPath) { "pwsh.exe" } else { "powershell.exe" }
 
@@ -48,7 +48,7 @@ switch ($Choice) {
     }
 }
 
-$regPath = Join-Path $regPathRoot $regPathSuffix
+$regPath = "${regPathRoot}\$regPathSuffix"
 
 if (Test-Path $regPath) {
     Write-Host "Menu entry '$menuName' found. Removing..." -ForegroundColor Yellow

@@ -5,6 +5,9 @@ This project provides a convenient way to run `acli.exe rovodev run` or `gemini`
 ## Features
 
 *   **Context Menu Integration:** Adds "Run with RovoDev" and "Run with Gemini" options to the right-click context menu for directories.
+
+    ![Right Click Menu](images/right_click_menu.png)
+
 *   **Automatic PowerShell Detection:** Automatically detects and uses `pwsh.exe` (PowerShell Core) or `powershell.exe` (Windows PowerShell).
 *   **Administrator Privileges Check:** Ensures the installation script is run with necessary administrator privileges.
 *   `acli.exe` executable (the script will prompt for its path if not found in the same directory, only for RovoDev option)
@@ -21,6 +24,9 @@ This project provides a convenient way to run `acli.exe rovodev run` or `gemini`
 2.  **Run the installation script:**
     *   Right-click on `install_run_with_AnyThing.ps1` and select "Run with PowerShell" or "Run as Administrator".
     *   The script will check for administrator privileges and prompt you if needed.
+
+    ![PowerShell Installation Prompt](images/powershell_install.png)
+
     *   You will be prompted to enter 'RovoDev' or 'Gemini' to choose which context menu entry to manage.
     *   If you choose 'RovoDev' and `acli.exe` is not found in the same directory as the script, you will be prompted to enter its full path (e.g., `C:\Program Files\RovoDev\acli.exe`).
 
