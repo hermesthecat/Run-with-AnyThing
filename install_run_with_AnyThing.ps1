@@ -43,9 +43,9 @@ if ([string]::IsNullOrWhiteSpace($Action)) {
     }
 }
 
-# --- Get Choice (RovoDev/Gemini) --- #
+# --- Get Choice (RovoDev/Gemini/Claude) --- #
 if ([string]::IsNullOrWhiteSpace($Choice)) {
-    $choiceOptions = [System.Collections.ArrayList]@("RovoDev", "Gemini")
+    $choiceOptions = [System.Collections.ArrayList]@("RovoDev", "Gemini", "Claude")
     $choiceSelection = Show-Menu -Title "Choose Command" -Options $choiceOptions
     
     while ($true) {
@@ -113,6 +113,16 @@ switch ($Choice) {
             $commandToExecute = "$executor -NoExit -Command `"Set-Location -LiteralPath '%V'; gemini`""
         } else {
             $commandToExecute = "$executor -NoExit -Command `"Set-Location -LiteralPath '%1'; gemini`""
+        }
+    }
+    "Claude" {
+        $regPathSuffix = "Run with Claude"
+        $menuName = "Run with Claude"
+        # Convert Windows path to WSL path and run claude command
+        if ($Location -eq 'Background') {
+            $commandToExecute = "$executor -NoExit -Command `"Set-Location -LiteralPath '%V'; `$wslPath = (wsl wslpath -a '%V'); wsl -e bash -c \`"cd \`"`$wslPath\`" && claude\`"`""
+        } else {
+            $commandToExecute = "$executor -NoExit -Command `"Set-Location -LiteralPath '%1'; `$wslPath = (wsl wslpath -a '%1'); wsl -e bash -c \`"cd \`"`$wslPath\`" && claude\`"`""
         }
     }
     default {
