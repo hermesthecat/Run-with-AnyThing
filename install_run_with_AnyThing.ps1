@@ -175,12 +175,14 @@ switch ($Choice) {
                 Write-Warning "Claude path cannot be empty. Please enter the full path."
                 $claudePath = Read-Host "Enter the full path to claude command in WSL"
             }
+            # Extract node path from claude path
+            $nodePath = $claudePath -replace "/bin/claude$", "/bin/node"
         }
-        # Convert Windows path to WSL path and run claude command with user-provided path
+        # Convert Windows path to WSL path and run claude with node directly
         if ($Location -eq 'Background') {
-            $commandToExecute = "$executor -NoExit -Command `"Set-Location -LiteralPath '%V'; wsl --cd '%V' '$claudePath'`""
+            $commandToExecute = "$executor -NoExit -Command `"Set-Location -LiteralPath '%V'; wsl --cd '%V' '$nodePath' '$claudePath'`""
         } else {
-            $commandToExecute = "$executor -NoExit -Command `"Set-Location -LiteralPath '%1'; wsl --cd '%1' '$claudePath'`""
+            $commandToExecute = "$executor -NoExit -Command `"Set-Location -LiteralPath '%1'; wsl --cd '%1' '$nodePath' '$claudePath'`""
         }
     }
     default {
@@ -197,9 +199,9 @@ if ($Action -eq "Uninstall") {
         Remove-Item -Path $regPath -Recurse
         Write-Host ""
         Write-Host "*** UNINSTALLED! ***" -ForegroundColor Red
-        Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Red
+        Write-Host "=========================================================================" -ForegroundColor Red
         Write-Host "[-] Successfully removed '$menuName' from your context menu!" -ForegroundColor Green
-        Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Red
+        Write-Host "=========================================================================" -ForegroundColor Red
     } else {
         Write-Host "Menu entry '$menuName' not found. Nothing to remove." -ForegroundColor Green
     }
@@ -219,7 +221,7 @@ if ($Action -eq "Uninstall") {
 
         Write-Host ""
         Write-Host "*** SUCCESS! ***" -ForegroundColor Green
-        Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Green
+        Write-Host "=========================================================================" -ForegroundColor Green
         Write-Host "[+] Added '$menuName' to your Windows context menu!" -ForegroundColor Green
         Write-Host "[*] Using PowerShell: $executor" -ForegroundColor Cyan
         Write-Host ""
@@ -228,6 +230,6 @@ if ($Action -eq "Uninstall") {
         Write-Host "   * Select '$menuName' from the context menu" -ForegroundColor White
         Write-Host "   * Enjoy your new productivity boost!" -ForegroundColor White
         Write-Host ""
-        Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Green
+        Write-Host "=========================================================================" -ForegroundColor Green
     }
 }
