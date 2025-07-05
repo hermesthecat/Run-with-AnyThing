@@ -37,10 +37,10 @@ function Show-Menu {
     $titlePadding = [Math]::Max(0, ($width - $Title.Length - 4) / 2)
     $titleLine = "|" + (" " * $titlePadding) + ">> $Title" + (" " * ($width - $titlePadding - $Title.Length - 5)) + "|"
     
-    Write-Host "===========================================================================" -ForegroundColor Cyan
+    Write-Host "===============================================================================" -ForegroundColor Cyan
     Write-Host $titleLine -ForegroundColor Yellow
-    Write-Host "===========================================================================" -ForegroundColor Cyan
-    Write-Host "|                                                                         |" -ForegroundColor Cyan
+    Write-Host "===============================================================================" -ForegroundColor Cyan
+    Write-Host "|                                                                             |" -ForegroundColor Cyan
     
     for ($i = 0; $i -lt $Options.Count; $i++) {
         $optionNumber = $i + 1
@@ -59,9 +59,9 @@ function Show-Menu {
         $padding = $width - $optionLine.Length + 1
         Write-Host ($optionLine + (" " * $padding) + "|") -ForegroundColor White
     }
-    
-    Write-Host "|                                                                         |" -ForegroundColor Cyan
-    Write-Host "===========================================================================" -ForegroundColor Cyan
+
+    Write-Host "|                                                                             |" -ForegroundColor Cyan
+    Write-Host "===============================================================================" -ForegroundColor Cyan
     Write-Host ""
     Write-Host ">> " -NoNewline -ForegroundColor Yellow
     $selection = Read-Host "Enter your choice (number)"
@@ -194,9 +194,9 @@ if ($Action -eq "Uninstall") {
         Remove-Item -Path $regPath -Recurse
         Write-Host ""
         Write-Host "*** UNINSTALLED! ***" -ForegroundColor Red
-        Write-Host "=========================================================================" -ForegroundColor Red
+        Write-Host "===============================================================================" -ForegroundColor Red
         Write-Host "[-] Successfully removed '$menuName' from your context menu!" -ForegroundColor Green
-        Write-Host "=========================================================================" -ForegroundColor Red
+        Write-Host "===============================================================================" -ForegroundColor Red
     } else {
         Write-Host "Menu entry '$menuName' not found. Nothing to remove." -ForegroundColor Green
     }
@@ -216,7 +216,7 @@ if ($Action -eq "Uninstall") {
 
         Write-Host ""
         Write-Host "*** SUCCESS! ***" -ForegroundColor Green
-        Write-Host "=========================================================================" -ForegroundColor Green
+        Write-Host "===============================================================================" -ForegroundColor Green
         Write-Host "[+] Added '$menuName' to your Windows context menu!" -ForegroundColor Green
         Write-Host "[*] Using PowerShell: $executor" -ForegroundColor Cyan
         Write-Host ""
@@ -225,6 +225,6 @@ if ($Action -eq "Uninstall") {
         Write-Host "   * Select '$menuName' from the context menu" -ForegroundColor White
         Write-Host "   * Enjoy your new productivity boost!" -ForegroundColor White
         Write-Host ""
-        Write-Host "=========================================================================" -ForegroundColor Green
+        Write-Host "===============================================================================" -ForegroundColor Green
     }
 }
