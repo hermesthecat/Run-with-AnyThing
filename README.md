@@ -27,7 +27,7 @@ This project provides a convenient way to run `acli.exe rovodev run`, `gemini`, 
     *   Right-click on `install_run_with_AnyThing.ps1` and select "Run with PowerShell" or "Run as Administrator".
     *   The script will check for administrator privileges and prompt you if needed.
 
-    ![PowerShell Installation Prompt](images/powershell_install.png)
+    ![PowerShell Installation Prompt](images/powershell_install1.png)
 
     *   Follow the on-screen prompts to:
         1.  Choose whether to **Install** or **Uninstall** a context menu entry.
