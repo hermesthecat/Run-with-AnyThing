@@ -12,16 +12,16 @@ If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 
 function Show-WelcomeScreen {
     Clear-Host
-    Write-Host "╔═══════════════════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║                                                                               ║" -ForegroundColor Cyan
-    Write-Host "║                        🚀 RUN WITH ANYTHING INSTALLER 🚀                     ║" -ForegroundColor Yellow
-    Write-Host "║                                                                               ║" -ForegroundColor Cyan
-    Write-Host "║               Add powerful context menu entries to Windows Explorer!          ║" -ForegroundColor White
-    Write-Host "║                                                                               ║" -ForegroundColor Cyan
-    Write-Host "║  This tool helps you integrate RovoDev, Gemini, and Claude commands into     ║" -ForegroundColor Gray
-    Write-Host "║  your Windows right-click context menu for quick access from any folder.     ║" -ForegroundColor Gray
-    Write-Host "║                                                                               ║" -ForegroundColor Cyan
-    Write-Host "╚═══════════════════════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host "===============================================================================" -ForegroundColor Cyan
+    Write-Host "|                                                                             |" -ForegroundColor Cyan
+    Write-Host "|                   >>> RUN WITH ANYTHING INSTALLER <<<                      |" -ForegroundColor Yellow
+    Write-Host "|                                                                             |" -ForegroundColor Cyan
+    Write-Host "|            Add powerful context menu entries to Windows Explorer!          |" -ForegroundColor White
+    Write-Host "|                                                                             |" -ForegroundColor Cyan
+    Write-Host "| This tool helps you integrate RovoDev, Gemini, and Claude commands into    |" -ForegroundColor Gray
+    Write-Host "| your Windows right-click context menu for quick access from any folder.    |" -ForegroundColor Gray
+    Write-Host "|                                                                             |" -ForegroundColor Cyan
+    Write-Host "===============================================================================" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "Press any key to continue..." -ForegroundColor Green
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
@@ -34,37 +34,37 @@ function Show-Menu {
     )
 
     Clear-Host
-    $width = 80
+    $width = 75
     $titlePadding = [Math]::Max(0, ($width - $Title.Length - 4) / 2)
-    $titleLine = "║" + (" " * $titlePadding) + "📋 $Title" + (" " * ($width - $titlePadding - $Title.Length - 6)) + "║"
+    $titleLine = "|" + (" " * $titlePadding) + ">> $Title" + (" " * ($width - $titlePadding - $Title.Length - 5)) + "|"
     
-    Write-Host "╔════════════════════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host "===========================================================================" -ForegroundColor Cyan
     Write-Host $titleLine -ForegroundColor Yellow
-    Write-Host "╠════════════════════════════════════════════════════════════════════════════════╣" -ForegroundColor Cyan
-    Write-Host "║                                                                                ║" -ForegroundColor Cyan
+    Write-Host "===========================================================================" -ForegroundColor Cyan
+    Write-Host "|                                                                         |" -ForegroundColor Cyan
     
     for ($i = 0; $i -lt $Options.Count; $i++) {
         $optionNumber = $i + 1
         $optionText = $Options[$i]
         $emoji = switch ($optionText) {
-            "Install" { "✅" }
-            "Uninstall" { "❌" }
-            "RovoDev" { "🔧" }
-            "Gemini" { "🤖" }
-            "Claude" { "🎯" }
-            "Folder" { "📁" }
-            "Background" { "🖼️" }
-            default { "▶️" }
+            "Install" { "[+]" }
+            "Uninstall" { "[-]" }
+            "RovoDev" { "[R]" }
+            "Gemini" { "[G]" }
+            "Claude" { "[C]" }
+            "Folder" { "[F]" }
+            "Background" { "[B]" }
+            default { "[>]" }
         }
-        $optionLine = "║  $optionNumber. $emoji $optionText"
+        $optionLine = "|  $optionNumber. $emoji $optionText"
         $padding = $width - $optionLine.Length + 1
-        Write-Host ($optionLine + (" " * $padding) + "║") -ForegroundColor White
+        Write-Host ($optionLine + (" " * $padding) + "|") -ForegroundColor White
     }
     
-    Write-Host "║                                                                                ║" -ForegroundColor Cyan
-    Write-Host "╚════════════════════════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host "|                                                                         |" -ForegroundColor Cyan
+    Write-Host "===========================================================================" -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "👉 " -NoNewline -ForegroundColor Yellow
+    Write-Host ">> " -NoNewline -ForegroundColor Yellow
     $selection = Read-Host "Enter your choice (number)"
     return $selection
 }
@@ -196,9 +196,9 @@ if ($Action -eq "Uninstall") {
         Write-Host "Menu entry '$menuName' found. Removing..." -ForegroundColor Yellow
         Remove-Item -Path $regPath -Recurse
         Write-Host ""
-        Write-Host "🗑️ UNINSTALLED! 🗑️" -ForegroundColor Red
+        Write-Host "*** UNINSTALLED! ***" -ForegroundColor Red
         Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Red
-        Write-Host "✅ Successfully removed '$menuName' from your context menu!" -ForegroundColor Green
+        Write-Host "[-] Successfully removed '$menuName' from your context menu!" -ForegroundColor Green
         Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Red
     } else {
         Write-Host "Menu entry '$menuName' not found. Nothing to remove." -ForegroundColor Green
@@ -218,15 +218,15 @@ if ($Action -eq "Uninstall") {
         Set-ItemProperty -Path $commandPath -Name "(Default)" -Value $commandToExecute
 
         Write-Host ""
-        Write-Host "🎉 SUCCESS! 🎉" -ForegroundColor Green
+        Write-Host "*** SUCCESS! ***" -ForegroundColor Green
         Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Green
-        Write-Host "✅ Added '$menuName' to your Windows context menu!" -ForegroundColor Green
-        Write-Host "🔧 Using PowerShell: $executor" -ForegroundColor Cyan
+        Write-Host "[+] Added '$menuName' to your Windows context menu!" -ForegroundColor Green
+        Write-Host "[*] Using PowerShell: $executor" -ForegroundColor Cyan
         Write-Host ""
-        Write-Host "📖 How to use:" -ForegroundColor Yellow
-        Write-Host "   • Right-click on any folder in Windows Explorer" -ForegroundColor White
-        Write-Host "   • Select '$menuName' from the context menu" -ForegroundColor White
-        Write-Host "   • Enjoy your new productivity boost! 🚀" -ForegroundColor White
+        Write-Host ">> How to use:" -ForegroundColor Yellow
+        Write-Host "   * Right-click on any folder in Windows Explorer" -ForegroundColor White
+        Write-Host "   * Select '$menuName' from the context menu" -ForegroundColor White
+        Write-Host "   * Enjoy your new productivity boost!" -ForegroundColor White
         Write-Host ""
         Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Green
     }
