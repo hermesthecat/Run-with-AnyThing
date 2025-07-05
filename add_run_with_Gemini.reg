@@ -1,8 +1,0 @@
-Windows Registry Editor Version 5.00
-
-[HKEY_CLASSES_ROOT\Directory\shell\Run with Gemini]
-@="Run with Gemini"
-"Icon"="powershell.exe"
-
-[HKEY_CLASSES_ROOT\Directory\shell\Run with Gemini\command]
-@="powershell.exe -NoExit -Command \"Set-Location -LiteralPath '%1'; gemini\"" 

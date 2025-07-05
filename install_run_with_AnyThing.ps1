@@ -10,6 +10,23 @@ If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     Exit
 }
 
+function Show-WelcomeScreen {
+    Clear-Host
+    Write-Host "╔═══════════════════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host "║                                                                               ║" -ForegroundColor Cyan
+    Write-Host "║                        🚀 RUN WITH ANYTHING INSTALLER 🚀                     ║" -ForegroundColor Yellow
+    Write-Host "║                                                                               ║" -ForegroundColor Cyan
+    Write-Host "║               Add powerful context menu entries to Windows Explorer!          ║" -ForegroundColor White
+    Write-Host "║                                                                               ║" -ForegroundColor Cyan
+    Write-Host "║  This tool helps you integrate RovoDev, Gemini, and Claude commands into     ║" -ForegroundColor Gray
+    Write-Host "║  your Windows right-click context menu for quick access from any folder.     ║" -ForegroundColor Gray
+    Write-Host "║                                                                               ║" -ForegroundColor Cyan
+    Write-Host "╚═══════════════════════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "Press any key to continue..." -ForegroundColor Green
+    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+}
+
 function Show-Menu {
     param (
         [string]$Title,
@@ -17,14 +34,44 @@ function Show-Menu {
     )
 
     Clear-Host
-    Write-Host "--- $Title ---" -ForegroundColor Cyan
+    $width = 80
+    $titlePadding = [Math]::Max(0, ($width - $Title.Length - 4) / 2)
+    $titleLine = "║" + (" " * $titlePadding) + "📋 $Title" + (" " * ($width - $titlePadding - $Title.Length - 6)) + "║"
+    
+    Write-Host "╔════════════════════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host $titleLine -ForegroundColor Yellow
+    Write-Host "╠════════════════════════════════════════════════════════════════════════════════╣" -ForegroundColor Cyan
+    Write-Host "║                                                                                ║" -ForegroundColor Cyan
+    
     for ($i = 0; $i -lt $Options.Count; $i++) {
-        Write-Host "$($i + 1). $($Options[$i])"
+        $optionNumber = $i + 1
+        $optionText = $Options[$i]
+        $emoji = switch ($optionText) {
+            "Install" { "✅" }
+            "Uninstall" { "❌" }
+            "RovoDev" { "🔧" }
+            "Gemini" { "🤖" }
+            "Claude" { "🎯" }
+            "Folder" { "📁" }
+            "Background" { "🖼️" }
+            default { "▶️" }
+        }
+        $optionLine = "║  $optionNumber. $emoji $optionText"
+        $padding = $width - $optionLine.Length + 1
+        Write-Host ($optionLine + (" " * $padding) + "║") -ForegroundColor White
     }
-    Write-Host "------------------"
-
+    
+    Write-Host "║                                                                                ║" -ForegroundColor Cyan
+    Write-Host "╚════════════════════════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "👉 " -NoNewline -ForegroundColor Yellow
     $selection = Read-Host "Enter your choice (number)"
     return $selection
+}
+
+# Show welcome screen if running interactively
+if ([string]::IsNullOrWhiteSpace($Action) -and [string]::IsNullOrWhiteSpace($Choice) -and [string]::IsNullOrWhiteSpace($Location)) {
+    Show-WelcomeScreen
 }
 
 # --- Get Action --- #
@@ -83,7 +130,7 @@ if ($Location -eq 'Background') {
     $regPathRoot = "${regPathRoot}\shell"
 }
 
-$pwshPath = (Get-Command "pwsh.exe" -ErrorAction SilentlyContinue)?.Source
+$pwshPath = Get-Command "pwsh.exe" -ErrorAction SilentlyContinue
 $executor = if ($pwshPath) { "pwsh.exe" } else { "powershell.exe" }
 
 $regPathSuffix = ""
@@ -118,11 +165,22 @@ switch ($Choice) {
     "Claude" {
         $regPathSuffix = "Run with Claude"
         $menuName = "Run with Claude"
-        # Convert Windows path to WSL path and run claude command
+        # Get claude path from user during installation
+        if ($Action -eq "Install") {
+            Write-Host "To find your claude command path, run this in WSL:" -ForegroundColor Yellow
+            Write-Host "  which claude" -ForegroundColor Cyan
+            Write-Host ""
+            $claudePath = Read-Host "Enter the full path to claude command in WSL (e.g., /home/username/.nvm/versions/node/v22.17.0/bin/claude)"
+            while ([string]::IsNullOrWhiteSpace($claudePath)) {
+                Write-Warning "Claude path cannot be empty. Please enter the full path."
+                $claudePath = Read-Host "Enter the full path to claude command in WSL"
+            }
+        }
+        # Convert Windows path to WSL path and run claude command with user-provided path
         if ($Location -eq 'Background') {
-            $commandToExecute = "$executor -NoExit -Command `"Set-Location -LiteralPath '%V'; `$wslPath = (wsl wslpath -a '%V'); wsl -e bash -c \`"cd \`"`$wslPath\`" && claude\`"`""
+            $commandToExecute = "$executor -NoExit -Command `"Set-Location -LiteralPath '%V'; wsl --cd '%V' '$claudePath'`""
         } else {
-            $commandToExecute = "$executor -NoExit -Command `"Set-Location -LiteralPath '%1'; `$wslPath = (wsl wslpath -a '%1'); wsl -e bash -c \`"cd \`"`$wslPath\`" && claude\`"`""
+            $commandToExecute = "$executor -NoExit -Command `"Set-Location -LiteralPath '%1'; wsl --cd '%1' '$claudePath'`""
         }
     }
     default {
@@ -137,7 +195,11 @@ if ($Action -eq "Uninstall") {
     if (Test-Path $regPath) {
         Write-Host "Menu entry '$menuName' found. Removing..." -ForegroundColor Yellow
         Remove-Item -Path $regPath -Recurse
-        Write-Host "Removed '$menuName'." -ForegroundColor Green
+        Write-Host ""
+        Write-Host "🗑️ UNINSTALLED! 🗑️" -ForegroundColor Red
+        Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Red
+        Write-Host "✅ Successfully removed '$menuName' from your context menu!" -ForegroundColor Green
+        Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Red
     } else {
         Write-Host "Menu entry '$menuName' not found. Nothing to remove." -ForegroundColor Green
     }
@@ -155,6 +217,17 @@ if ($Action -eq "Uninstall") {
         New-Item -Path $commandPath -Force | Out-Null
         Set-ItemProperty -Path $commandPath -Name "(Default)" -Value $commandToExecute
 
-        Write-Host "Added '$menuName'. Using PowerShell: $executor" -ForegroundColor Green
+        Write-Host ""
+        Write-Host "🎉 SUCCESS! 🎉" -ForegroundColor Green
+        Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Green
+        Write-Host "✅ Added '$menuName' to your Windows context menu!" -ForegroundColor Green
+        Write-Host "🔧 Using PowerShell: $executor" -ForegroundColor Cyan
+        Write-Host ""
+        Write-Host "📖 How to use:" -ForegroundColor Yellow
+        Write-Host "   • Right-click on any folder in Windows Explorer" -ForegroundColor White
+        Write-Host "   • Select '$menuName' from the context menu" -ForegroundColor White
+        Write-Host "   • Enjoy your new productivity boost! 🚀" -ForegroundColor White
+        Write-Host ""
+        Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Green
     }
 }
