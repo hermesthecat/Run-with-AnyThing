@@ -10,21 +10,18 @@ If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     Exit
 }
 
-function Show-WelcomeScreen {
-    Clear-Host
+
+function Show-Banner {
     Write-Host "===============================================================================" -ForegroundColor Cyan
     Write-Host "|                                                                             |" -ForegroundColor Cyan
-    Write-Host "|                   >>> RUN WITH ANYTHING INSTALLER <<<                      |" -ForegroundColor Yellow
+    Write-Host "|                   >>> RUN WITH ANYTHING INSTALLER <<<                       |" -ForegroundColor Yellow
+    Write-Host "|            Add powerful context menu entries to Windows Explorer!           |" -ForegroundColor White
     Write-Host "|                                                                             |" -ForegroundColor Cyan
-    Write-Host "|            Add powerful context menu entries to Windows Explorer!          |" -ForegroundColor White
     Write-Host "|                                                                             |" -ForegroundColor Cyan
-    Write-Host "| This tool helps you integrate RovoDev, Gemini, and Claude commands into    |" -ForegroundColor Gray
-    Write-Host "| your Windows right-click context menu for quick access from any folder.    |" -ForegroundColor Gray
-    Write-Host "|                                                                             |" -ForegroundColor Cyan
+    Write-Host "| This tool helps you integrate RovoDev, Gemini, and Claude commands into     |" -ForegroundColor Gray
+    Write-Host "| your Windows right-click context menu for quick access from any folder.     |" -ForegroundColor Gray
     Write-Host "===============================================================================" -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "Press any key to continue..." -ForegroundColor Green
-    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 }
 
 function Show-Menu {
@@ -34,6 +31,8 @@ function Show-Menu {
     )
 
     Clear-Host
+    Show-Banner
+    
     $width = 75
     $titlePadding = [Math]::Max(0, ($width - $Title.Length - 4) / 2)
     $titleLine = "|" + (" " * $titlePadding) + ">> $Title" + (" " * ($width - $titlePadding - $Title.Length - 5)) + "|"
@@ -69,10 +68,6 @@ function Show-Menu {
     return $selection
 }
 
-# Show welcome screen if running interactively
-if ([string]::IsNullOrWhiteSpace($Action) -and [string]::IsNullOrWhiteSpace($Choice) -and [string]::IsNullOrWhiteSpace($Location)) {
-    Show-WelcomeScreen
-}
 
 # --- Get Action --- #
 if ([string]::IsNullOrWhiteSpace($Action)) {
